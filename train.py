@@ -262,11 +262,11 @@ if __name__ == "__main__":
     os.environ["NCCL_IB_DISABLE"] = "1"
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_dir", type=str,  help="Path to dataset root",
-                        default="./dataset/SemanticDataset/")
+                        default="/content")
     parser.add_argument("--loadpath", type=str,  help="Path to dataset root", 
                         default="./DDRNet23s_imagenet.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
     parser.add_argument("--epochs", type=int, default=500)
-    parser.add_argument("--result_dir", type=str, default='./pths/DDRNet004')
+    parser.add_argument("--result_dir", type=str, default='/content/drive/MyDrive/DDRNet001')
     parser.add_argument("--lr", type=float, default=5e-4)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--num_classes", type=int, default=19)
