@@ -186,9 +186,9 @@ class SegmentationTransform:
         image, label = self._random_hflip(image, label, p=0.5)
 
         applied = []  # ← 이번 샘플에 실제 적용된 증강들
-        if tag == "low_light":
-            image, applied = self._apply_aug_chain(image, ["overbright"])
-        elif tag == "normal":
+        # if tag == "low_light":
+        #     image, applied = self._apply_aug_chain(image, ["overbright"])
+        if tag == "normal":
             if random.random() < self.normal_aug_prob:
                 chain = random.choice(self.normal_aug_chains)
                 image, applied = self._apply_aug_chain(image, chain)
