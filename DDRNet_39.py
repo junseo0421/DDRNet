@@ -364,7 +364,7 @@ class DualResNet(nn.Module):
 def DualResNet_imagenet(pretrained=False):
     model = DualResNet(BasicBlock, [3, 4, 6, 3], num_classes=19, planes=64, spp_planes=128, head_planes=256, augment=False)
     if pretrained:
-        checkpoint = torch.load('./content/drive/MyDrive/DDRNet39_imagenet.pth', map_location='cpu')
+        checkpoint = torch.load('/content/drive/MyDrive/DDRNet39_imagenet.pth', map_location='cpu')
         '''       
         new_state_dict = OrderedDict()
         for k, v in checkpoint['state_dict'].items():
