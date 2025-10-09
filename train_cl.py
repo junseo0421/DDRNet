@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 from DDRNet import DDRNet
-from DDRNet_39 import DualResNet_imagenet
+from DDRNet_39 import *
 from functions import *
 from pathlib import Path
 from torch.utils.tensorboard import SummaryWriter
@@ -98,7 +98,8 @@ def train(args):
     # Model
     print(f"[Single GPU] Before model setup")
     # model = DDRNet(num_classes=args.num_classes).to(device)
-    model = DualResNet_imagenet(pretrained=True).to(device)
+    # model = DualResNet_imagenet(pretrained=True).to(device)
+    model = DualResNet(BasicBlock, [3, 4, 6, 3], num_classes=19, planes=64, spp_planes=128, head_planes=256, augment=False).to(device)
     # model = DDP(model, device_ids=[local_rank])
     print(f"[Single GPU] Model initialized")
 
@@ -115,18 +116,18 @@ def train(args):
     #     load_state_dict(model, state_dict)
     start_epoch=0
 
-    # ## 학습 끊겨 checkpoint 불러올 때
-    # if args.loadpath is not None:
-    #     ckpt = torch.load(args.loadpath, map_location=device)
-    #     model.load_state_dict(ckpt["model"])
-    #     optimizer.load_state_dict(ckpt["optimizer"])
-    #     scheduler.load_state_dict(ckpt["scheduler"])
-    #     start_epoch = ckpt["epoch"]
-    #     best_miou = ckpt.get("best_miou", float("-inf"))  # 혹시 저장된 값 있으면 복원
-    #     print(f"✅ Resumed training from epoch {start_epoch}, best_miou={best_miou:.4f}")
-    # else:
-    #     start_epoch = 0
-    #     best_miou = float("-inf")
+    ## 학습 끊겨 checkpoint 불러올 때
+    if args.loadpath is not None:
+        ckpt = torch.load(args.loadpath, map_location=device)
+        model.load_state_dict(ckpt["model"])
+        optimizer.load_state_dict(ckpt["optimizer"])
+        scheduler.load_state_dict(ckpt["scheduler"])
+        start_epoch = ckpt["epoch"]
+        best_miou = ckpt.get("best_miou", float("-inf"))  # 혹시 저장된 값 있으면 복원
+        print(f"✅ Resumed training from epoch {start_epoch}, best_miou={best_miou:.4f}")
+    else:
+        start_epoch = 0
+        best_miou = float("-inf")
 
 
     # -------------------- Logging/TensorBoard --------------------
@@ -295,7 +296,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_dir", type=str,  help="Path to dataset root",
                         default="/content/drive/MyDrive/SemanticDataset_lednet")
     parser.add_argument("--loadpath", type=str,  help="Path to dataset root", 
-                        default="./DDRNet39_imagenet.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
+                        default="/content/drive/MyDrive/DDRNet39_001/checkpoint_latest.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
     parser.add_argument("--epochs", type=int, default=500)
     parser.add_argument("--result_dir", type=str, default='/content/drive/MyDrive/DDRNet39_001')
     parser.add_argument("--lr", type=float, default=5e-4)
