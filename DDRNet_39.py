@@ -348,6 +348,9 @@ class DualResNet(nn.Module):
                         mode='bilinear')
 
         x_ = self.layer5_(self.relu(x_))
+
+        feature_for_kd = x_.clone()
+
         x = F.interpolate(
                         self.spp(self.layer5(self.relu(x))),
                         size=[height_output, width_output],
@@ -357,14 +360,14 @@ class DualResNet(nn.Module):
 
         if self.augment: 
             x_extra = self.seghead_extra(temp)
-            return [x_, x_extra]
+            return [x_, x_extra], feature_for_kd
         else:
-            return x_      
+            return x_, feature_for_kd
 
 def DualResNet_imagenet(pretrained=False):
     model = DualResNet(BasicBlock, [3, 4, 6, 3], num_classes=19, planes=64, spp_planes=128, head_planes=256, augment=False)
     if pretrained:
-        checkpoint = torch.load('/content/drive/MyDrive/DDRNet39_imagenet.pth', map_location='cpu')
+        checkpoint = torch.load('./DDRNet39_imagenet.pth', map_location='cpu')
         '''       
         new_state_dict = OrderedDict()
         for k, v in checkpoint['state_dict'].items():

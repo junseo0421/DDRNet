@@ -325,6 +325,9 @@ class DDRNet(nn.Module):
                         mode='bilinear')
 
         x_ = self.layer5_(self.relu(x_))
+
+        feature_for_kd = x_.clone()
+
         x = F.interpolate(
                         self.spp(self.layer5(self.relu(x))),
                         size=[height_output, width_output],
@@ -332,8 +335,8 @@ class DDRNet(nn.Module):
 
         x_ = self.final_layer(x + x_)
 
-        if self.training: 
+        if self.training:
             x_extra = self.seghead_extra(temp)
-            return (x_, x_extra)
+            return (x_, x_extra), feature_for_kd
         else:
-            return x_      
+            return x_, feature_for_kd
