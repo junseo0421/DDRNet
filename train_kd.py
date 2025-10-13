@@ -134,8 +134,15 @@ def train(args):
 
     if args.loadpath is not None:
         map_location = {f'cuda:{0}': f'cuda:{local_rank}'}
-        state_dict = torch.load(args.loadpath, map_location=map_location)
-        load_state_dict(model, state_dict)
+        state = torch.load(args.loadpath, map_location=map_location)
+        # weights-only(모델 state_dict)인 경우
+        try:
+            load_state_dict(model, state)  # 네가 이미 쓰는 헬퍼
+            print(f"[Rank {local_rank}] Loaded weights-only from {args.loadpath}")
+        except Exception:
+            # 혹시 모를 키 구조 차이 대비
+            (model.module if isinstance(model, DDP) else model).load_state_dict(state, strict=False)
+            print(f"[Rank {local_rank}] Loaded weights-only (strict=False)")
 
     # -------------------- Logging/TensorBoard --------------------
     writer = None
@@ -151,8 +158,12 @@ def train(args):
 
     best_miou = float("-inf")
     eps = 1e-6
+    start_epoch = args.start_epoch
 
-    for epoch in range(args.epochs):
+    for _ in range(start_epoch):
+        scheduler.step()
+
+    for epoch in range(start_epoch, args.epochs):
         model.train()
         criterion_kd.train()
 
@@ -355,8 +366,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_dir", type=str,  help="Path to dataset root",
                         default="/content/drive/MyDrive/SemanticDataset_lednet")
+    # parser.add_argument("--loadpath", type=str,  help="Path to dataset root", 
+    #                     default="./DDRNet23s_imagenet.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
     parser.add_argument("--loadpath", type=str,  help="Path to dataset root", 
-                        default="./DDRNet23s_imagenet.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
+                        default="/content/drive/MyDrive/DDRNet23s_kd_001/model_best_e64_miou0.7418.pth")    # "ex: ./pths/DDRNet23s_imagenet.pth"
     parser.add_argument("--teacher_loadpath", type=str, help="Path to dataset root",
                         default="/content/drive/MyDrive/DDRNet39_001/teacher_weights_only_2.pth")
     parser.add_argument("--epochs", type=int, default=500)
@@ -369,6 +382,8 @@ if __name__ == "__main__":
     parser.add_argument("--normal_aug_prob", type=float, default=0.8, help="normal 이미지에 degradation 조합을 적용할 확률")
     parser.add_argument("--severity_min", type=int, default=3)
     parser.add_argument("--severity_max", type=int, default=5)
+    parser.add_argument("--start-epoch", type=int, default=64,
+                    help="가중치만 로드 시, 이어서 시작할 에폭(마지막 완료 에폭+1)")
     
     args = parser.parse_args()
     
