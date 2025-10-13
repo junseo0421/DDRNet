@@ -149,8 +149,10 @@ def train(args):
     if local_rank == 0:
         os.makedirs(args.result_dir, exist_ok=True)
         log_path = os.path.join(args.result_dir, "log.txt")
-        with open(log_path, 'w') as f:
-            f.write("Epoch\t\tTrain-loss\t\tlearningRate\n")
+        mode = 'a' if args.start_epoch > 0 else 'w'
+        with open(log_path, mode) as f:
+            if mode == 'w':
+                f.write("Epoch\t\tTrain-loss\t\tlearningRate\n")
         writer = SummaryWriter(log_dir=os.path.join(args.result_dir, "tb"))
 
     def _get_state_dict(m):
@@ -382,7 +384,7 @@ if __name__ == "__main__":
     parser.add_argument("--normal_aug_prob", type=float, default=0.8, help="normal 이미지에 degradation 조합을 적용할 확률")
     parser.add_argument("--severity_min", type=int, default=3)
     parser.add_argument("--severity_max", type=int, default=5)
-    parser.add_argument("--start-epoch", type=int, default=64,
+    parser.add_argument("--start-epoch", type=int, default=65,
                     help="가중치만 로드 시, 이어서 시작할 에폭(마지막 완료 에폭+1)")
     
     args = parser.parse_args()
