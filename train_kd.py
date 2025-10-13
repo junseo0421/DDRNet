@@ -384,7 +384,7 @@ if __name__ == "__main__":
     parser.add_argument("--normal_aug_prob", type=float, default=0.8, help="normal 이미지에 degradation 조합을 적용할 확률")
     parser.add_argument("--severity_min", type=int, default=3)
     parser.add_argument("--severity_max", type=int, default=5)
-    parser.add_argument("--start-epoch", type=int, default=65,
+    parser.add_argument("--start-epoch", type=int, default=64,
                     help="가중치만 로드 시, 이어서 시작할 에폭(마지막 완료 에폭+1)")
     
     args = parser.parse_args()
